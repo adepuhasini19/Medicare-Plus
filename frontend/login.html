@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ | Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--teal:#0d9488;--teal-dk:#0f766e;--teal-pale:#ccfbf1;--teal-50:#f0fdfa;--navy:#0b1120;--muted:#64748b;--border:#e2e8f0;--bg:#f8fafc;--sh-teal:0 6px 20px rgba(13,148,136,.25)}
+body{font-family:'Inter',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:inherit}
+
+/* nav */
+nav{background:#fff;border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center}
+.nav-logo{display:flex;align-items:center;gap:8px}
+.nav-logo-icon{width:26px;height:26px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.nav-brand{font-family:'Playfair Display',serif;font-size:.96rem;font-weight:700;color:var(--navy)}
+.nav-brand strong{color:var(--teal)}
+.nav-back{margin-left:auto;color:var(--muted);font-size:.82rem;font-weight:500;display:flex;align-items:center;gap:5px;transition:color .15s}
+.nav-back:hover{color:var(--navy)}
+
+/* layout */
+.page{flex:1;display:flex;min-height:calc(100vh - 60px)}
+.left{width:420px;flex-shrink:0;background:#fff;padding:44px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border)}
+.right{flex:1;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:40px;border-left:1px solid var(--border)}
+
+/* right feature card */
+.r-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:26px;width:300px;box-shadow:0 4px 24px rgba(0,0,0,.07)}
+.r-card-logo{font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:3px}
+.r-card-logo strong{color:var(--teal)}
+.r-sub{font-size:.73rem;color:var(--muted);margin-bottom:16px}
+.r-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.r-stat{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 12px}
+.r-stat-num{font-size:1.15rem;font-weight:800;color:var(--navy);font-family:'Inter',sans-serif;line-height:1}
+.r-stat-lbl{font-size:.67rem;color:var(--muted);margin-top:3px}
+.r-feature{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--border)}
+.r-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.r-feat-txt{font-size:.77rem;color:var(--muted)}
+
+/* form area */
+.form-logo{display:flex;align-items:center;gap:9px;margin-bottom:32px}
+.form-logo-icon{width:28px;height:28px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.form-brand{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--navy)}
+.form-brand strong{color:var(--teal)}
+.form-heading{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.form-sub{font-size:.82rem;color:var(--muted);margin-bottom:24px}
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px}
+.tab{flex:1;padding:8px 0;border:none;background:none;cursor:pointer;font-size:.86rem;font-weight:600;font-family:inherit;color:#94a3b8;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.form-group{margin-bottom:13px}
+.form-label{display:block;font-size:.69rem;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.form-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.87rem;font-family:inherit;color:var(--navy);background:#fff;outline:none;transition:all .15s}
+.form-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.08)}
+.form-input::placeholder{color:#cbd5e1}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.form-select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.87rem;font-family:inherit;color:var(--navy);background:#fff;outline:none}
+.form-select:focus{border-color:var(--teal)}
+.btn-submit{width:100%;padding:11px;background:var(--teal);border:none;border-radius:8px;color:#fff;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;margin-top:3px;box-shadow:var(--sh-teal)}
+.btn-submit:hover{background:var(--teal-dk)}
+.demo-box{background:var(--teal-50);border:1px solid var(--teal-pale);border-radius:9px;padding:12px;margin-top:14px}
+.demo-label{font-size:.66rem;font-weight:700;color:var(--teal-dk);margin-bottom:7px;text-transform:uppercase;letter-spacing:.07em}
+.demo-item{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.demo-item:last-child{margin-bottom:0}
+.demo-email{font-size:.77rem;color:var(--muted)}
+.demo-btn{background:#fff;border:1px solid var(--teal-pale);color:var(--teal-dk);padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+.demo-btn:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+.error{background:#fee2e2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#991b1b;margin-bottom:13px;display:none}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-icon"><svg viewBox="0 0 28 28" fill="none" width="16" height="16"><path d="M16 5H12V12H5V16H12V23H16V16H23V12H16V5Z" fill="white"/></svg></div>
+    <span class="nav-brand">Medicare<strong>+</strong></span>
+  </a>
+  <a href="index.html" class="nav-back">← Back to home</a>
+</nav>
+
+<div class="page">
+  <div class="left">
+    <div class="form-logo">
+      <div class="form-logo-icon"><svg viewBox="0 0 28 28" fill="none" width="16" height="16"><path d="M16 5H12V12H5V16H12V23H16V16H23V12H16V5Z" fill="white"/></svg></div>
+      <span class="form-brand">Medicare<strong>+</strong></span>
+    </div>
+    <div class="form-heading" id="auth-heading">Welcome back</div>
+    <div class="form-sub" id="auth-sub">Sign in to your healthcare account</div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="tab" id="tab-register" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <div class="error" id="error-box"></div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input class="form-input" type="email" id="l-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="l-pass" placeholder="••••••••"/>
+      </div>
+      <button class="btn-submit" onclick="doLogin()">Sign in →</button>
+      <div class="demo-box">
+        <div class="demo-label">🔑 Demo accounts</div>
+        <div class="demo-item"><span class="demo-email">patient@medicare.com</span><button class="demo-btn" onclick="fill('patient@medicare.com','patient123')">Use</button></div>
+        <div class="demo-item"><span class="demo-email">priya@medicare.com (doctor)</span><button class="demo-btn" onclick="fill('priya@medicare.com','doctor123')">Use</button></div>
+      </div>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" id="r-name" placeholder="Your full name"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="r-email" placeholder="you@example.com"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="tel" id="r-phone" placeholder="9876543210"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="r-pass" placeholder="Min 6 chars"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="r-role"><option value="patient">Patient</option><option value="doctor">Doctor</option></select>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="doRegister()">Create account →</button>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="r-card">
+      <div class="r-card-logo">Medicare<strong>+</strong></div>
+      <div class="r-sub">Your complete health platform</div>
+      <div class="r-stat-grid">
+        <div class="r-stat"><div class="r-stat-num">10</div><div class="r-stat-lbl">Features</div></div>
+        <div class="r-stat"><div class="r-stat-num">8+</div><div class="r-stat-lbl">Specialists</div></div>
+        <div class="r-stat"><div class="r-stat-num">24/7</div><div class="r-stat-lbl">Access</div></div>
+        <div class="r-stat"><div class="r-stat-num">98%</div><div class="r-stat-lbl">Satisfaction</div></div>
+      </div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Smart appointment booking</div></div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Symptom checker & diagnosis</div></div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Digital prescriptions & PDF</div></div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Doctor–patient messaging</div></div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Medicine reminders</div></div>
+      <div class="r-feature"><div class="r-dot"></div><div class="r-feat-txt">Emergency quick-dial</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='http://localhost:5000/api';
+let tab='login';
+if(localStorage.getItem('token')) window.location.href='dashboard.html';
+const _p=new URLSearchParams(window.location.search);
+if(_p.get('tab')==='register') switchTab('register');
+
+function switchTab(t){
+  tab=t;
+  document.getElementById('login-form').style.display=t==='login'?'block':'none';
+  document.getElementById('register-form').style.display=t==='register'?'block':'none';
+  document.getElementById('tab-login').className='tab'+(t==='login'?' active':'');
+  document.getElementById('tab-register').className='tab'+(t==='register'?' active':'');
+  document.getElementById('auth-heading').textContent=t==='login'?'Welcome back':'Create account';
+  document.getElementById('auth-sub').textContent=t==='login'?'Sign in to your healthcare account':'Join Medicare+ today';
+  hideErr();
+}
+function showErr(msg){const e=document.getElementById('error-box');e.textContent=msg;e.style.display='block';}
+function hideErr(){document.getElementById('error-box').style.display='none';}
+function fill(email,pass){document.getElementById('l-email').value=email;document.getElementById('l-pass').value=pass;}
+
+async function doLogin(){
+  hideErr();
+  const email=document.getElementById('l-email').value.trim();
+  const password=document.getElementById('l-pass').value;
+  if(!email||!password) return showErr('Please enter email and password.');
+  try{
+    const res=await fetch(`${API}/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(!res.ok) return showErr(data.error||'Login failed');
+    localStorage.setItem('token',data.token);
+    localStorage.setItem('user',JSON.stringify(data.user));
+    window.location.href='dashboard.html';
+  }catch{showErr('Cannot connect to server. Make sure Flask is running on port 5000.');}
+}
+async function doRegister(){
+  hideErr();
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const phone=document.getElementById('r-phone').value.trim();
+  const password=document.getElementById('r-pass').value;
+  const role=document.getElementById('r-role').value;
+  if(!name||!email||!password) return showErr('Please fill in all required fields.');
+  try{
+    const res=await fetch(`${API}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,password,role})});
+    const data=await res.json();
+    if(!res.ok) return showErr(data.error||'Registration failed');
+    localStorage.setItem('token',data.token);
+    localStorage.setItem('user',JSON.stringify(data.user));
+    window.location.href='dashboard.html';
+  }catch{showErr('Cannot connect to server. Make sure Flask is running on port 5000.');}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter') tab==='login'?doLogin():doRegister();});
+</script>
+</body>
+</html>

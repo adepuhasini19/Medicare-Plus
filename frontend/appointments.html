@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Appointments</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>Appointments</h1>
+      <p>Manage and book your appointments</p>
+      <div class="page-hero-actions">
+        <button class="btn btn-soft btn-sm" id="book-btn" onclick="openModal('book-modal')">+ Book appointment</button>
+      </div>
+    </div>
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap" id="filter-tabs">
+      <button class="btn btn-soft btn-sm active-tab" data-filter="all" onclick="filterAppts('all',this)">All</button>
+      <button class="btn btn-outline btn-sm" data-filter="pending" onclick="filterAppts('pending',this)">Pending</button>
+      <button class="btn btn-outline btn-sm" data-filter="confirmed" onclick="filterAppts('confirmed',this)">Confirmed</button>
+      <button class="btn btn-outline btn-sm" data-filter="completed" onclick="filterAppts('completed',this)">Completed</button>
+      <button class="btn btn-outline btn-sm" data-filter="cancelled" onclick="filterAppts('cancelled',this)">Cancelled</button>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Doctor / Patient</th><th>Specialty</th><th>Date & Time</th><th>Reason</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="appt-body"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3)">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Book Modal -->
+<div class="modal-overlay" id="book-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Book Appointment <button class="modal-close" onclick="closeModal('book-modal')">×</button></div>
+    <div class="form-group">
+      <label class="form-label">Select Doctor</label>
+      <select class="form-select" id="bk-doctor" onchange="loadSlots()"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" type="date" id="bk-date" onchange="loadSlots()" min=""/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Available Time Slot</label>
+        <select class="form-select" id="bk-time"><option value="">— select date first —</option></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason for Visit</label>
+      <textarea class="form-textarea" id="bk-reason" placeholder="Brief description of your concern..."></textarea>
+    </div>
+    <div id="slot-info" style="font-size:12.5px;color:var(--text2);margin-bottom:12px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('book-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="bookAppt()">Confirm booking</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('appointments');
+const user = getUser();
+let allAppts = [];
+
+if (user.role === 'doctor') {
+  document.getElementById('book-btn').style.display = 'none';
+}
+
+async function loadAppts() {
+  try {
+    allAppts = await apiFetch('/appointments/');
+    renderAppts(allAppts);
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function renderAppts(list) {
+  const body = document.getElementById('appt-body');
+  if (!list.length) {
+    body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">No appointments found</div></div></td></tr>';
+    return;
+  }
+  body.innerHTML = list.map(a => `
+    <tr>
+      <td><div style="font-weight:600;font-size:13.5px">${escHtml(user.role==='patient'?a.doctor_name:a.patient_name||'Patient')}</div></td>
+      <td><span class="badge badge-purple">${escHtml(a.specialty||'—')}</span></td>
+      <td><div style="font-size:13px">${fmtDate(a.date)}</div><div style="font-size:12px;color:var(--text2)">${fmtTime(a.time)}</div></td>
+      <td style="max-width:160px;font-size:12.5px;color:var(--text2)">${escHtml(a.reason||'—')}</td>
+      <td>${statusBadge(a.status)}</td>
+      <td>
+        ${user.role==='doctor' && a.status==='pending' ? `<button class="btn btn-soft btn-sm" onclick="updateStatus(${a.id},'confirmed')">Confirm</button>` : ''}
+        ${a.status==='confirmed' && user.role==='doctor' ? `<button class="btn btn-outline btn-sm" onclick="updateStatus(${a.id},'completed')" style="margin-left:4px">Complete</button>` : ''}
+        ${(a.status==='pending'||a.status==='confirmed') ? `<button class="btn btn-sm" style="background:var(--red-l);color:var(--red);margin-left:4px" onclick="updateStatus(${a.id},'cancelled')">Cancel</button>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+function filterAppts(filter, btn) {
+  document.querySelectorAll('#filter-tabs .btn').forEach(b => { b.className = 'btn btn-outline btn-sm'; });
+  btn.className = 'btn btn-soft btn-sm';
+  const filtered = filter === 'all' ? allAppts : allAppts.filter(a => a.status === filter);
+  renderAppts(filtered);
+}
+
+async function updateStatus(id, status) {
+  try {
+    await apiFetch(`/appointments/${id}`, { method:'PUT', body:JSON.stringify({status}) });
+    showToast(`Appointment ${status}`,'success');
+    loadAppts();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function loadDoctors() {
+  const docs = await apiFetch('/doctors/');
+  const sel = document.getElementById('bk-doctor');
+  sel.innerHTML = docs.map(d => `<option value="${d.id}">${escHtml(d.name)} — ${escHtml(d.specialty)} (₹${d.fees})</option>`).join('');
+}
+
+async function loadSlots() {
+  const docId = document.getElementById('bk-doctor').value;
+  const date  = document.getElementById('bk-date').value;
+  if (!docId || !date) return;
+  try {
+    const data = await apiFetch(`/appointments/slots?doctor_id=${docId}&date=${date}`);
+    const sel = document.getElementById('bk-time');
+    if (!data.slots.length) {
+      sel.innerHTML = '<option value="">No slots available</option>';
+      document.getElementById('slot-info').textContent = 'All slots are booked for this date.';
+    } else {
+      sel.innerHTML = data.slots.map(s => `<option value="${s}">${fmtTime(s)}</option>`).join('');
+      document.getElementById('slot-info').textContent = `${data.slots.length} slots available · ${data.booked.length} booked`;
+    }
+  } catch(e) {}
+}
+
+async function bookAppt() {
+  const doctor_id = +document.getElementById('bk-doctor').value;
+  const date      = document.getElementById('bk-date').value;
+  const time      = document.getElementById('bk-time').value;
+  const reason    = document.getElementById('bk-reason').value;
+  if (!date || !time) return showToast('Please select date and time','error');
+  try {
+    await apiFetch('/appointments/', { method:'POST', body:JSON.stringify({doctor_id,date,time,reason}) });
+    showToast('Appointment booked!','success');
+    closeModal('book-modal');
+    loadAppts();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+// init
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('bk-date').min = today;
+document.getElementById('bk-date').value = today;
+if (user.role === 'patient') loadDoctors();
+loadAppts();
+</script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Prescriptions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.presc-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:box-shadow .2s}
+.presc-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.09)}
+.presc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.presc-ref{font-size:11px;font-weight:700;background:var(--teal-pale);color:var(--teal-dk);padding:2px 8px;border-radius:5px;font-family:monospace}
+.med-chip{display:inline-flex;align-items:center;gap:5px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:3px 9px;font-size:12px;color:#0369a1;margin:3px}
+
+/* Prescription form modal */
+.rx-form{display:flex;flex-direction:column;gap:0}
+.rx-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border:1.5px solid var(--border);border-radius:12px;margin-bottom:20px;background:#fff}
+.rx-logo-box{border:1.5px solid var(--border);border-radius:10px;padding:8px 18px;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.rx-logo-box span{color:var(--teal)}
+.rx-stethoscope{width:72px;height:72px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:30px}
+.rx-body{border-left:3px solid var(--teal-pale);padding-left:20px;display:flex;flex-direction:column;gap:14px}
+.rx-field label{display:block;font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px}
+.rx-input{width:100%;padding:9px 12px;border:1.5px solid var(--teal-pale);border-radius:8px;font-size:13.5px;font-family:inherit;color:var(--navy);background:#fff;outline:none;transition:border .15s}
+.rx-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.08)}
+.rx-input::placeholder{color:#cbd5e1}
+.rx-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rx-med-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.rx-med-row input{flex:1;padding:9px 12px;border:1.5px solid var(--teal-pale);border-radius:8px;font-size:13px;font-family:inherit;outline:none;transition:border .15s}
+.rx-med-row input:focus{border-color:var(--teal)}
+.rx-med-row button{width:30px;height:30px;border:none;background:#fee2e2;color:#991b1b;border-radius:6px;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.btn-add-med{width:100%;padding:9px;border:1.5px dashed var(--teal-pale);border-radius:8px;background:transparent;color:var(--teal);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-add-med:hover{background:var(--teal-50);border-color:var(--teal)}
+.sig-pad-wrap{border:1.5px solid var(--teal-pale);border-radius:8px;background:#fafafa;position:relative;overflow:hidden}
+canvas#sig-canvas{display:block;touch-action:none;cursor:crosshair}
+.sig-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#cbd5e1;gap:4px}
+.sig-hint-line{width:180px;height:1px;background:#e2e8f0;margin-top:8px}
+.sig-actions{display:flex;gap:8px;margin-top:6px}
+.btn-clear-sig{padding:5px 12px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+.btn-clear-sig:hover{border-color:var(--teal);color:var(--teal)}
+
+
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+
+    <div class="page-hero">
+      <h1>Prescriptions</h1>
+      <p>View and create digital prescriptions</p>
+      <div class="page-hero-actions">
+        <button class="btn btn-soft btn-sm" id="new-presc-btn" style="display:none" onclick="openPrescForm()">+ New prescription</button>
+      </div>
+    </div>
+
+    <div id="presc-list"></div>
+  </main>
+</div>
+
+<!-- ── PRESCRIPTION FORM MODAL ── -->
+<div class="modal-overlay" id="presc-modal" style="display:none">
+  <div class="modal modal-lg" style="max-width:600px">
+    <div class="modal-title">
+      New Prescription
+      <button class="modal-close" onclick="closeModal('presc-modal')">×</button>
+    </div>
+
+    <div class="rx-form">
+      <!-- Header with logo + stethoscope -->
+      <div class="rx-header">
+        <div class="rx-logo-box">Medicare<span>+</span></div>
+        <div style="text-align:center">
+          <div class="rx-stethoscope">🩺</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Medicare+</div>
+        </div>
+      </div>
+
+      <!-- Select patient (hidden, auto-filled) -->
+      <div style="display:none"><select id="p-patient"></select></div>
+
+      <div class="rx-body">
+        <!-- Patient Name -->
+        <div class="rx-field">
+          <label>Patient's Name:</label>
+          <div class="rx-row">
+            <input class="rx-input" id="rx-fname" placeholder="First name"/>
+            <input class="rx-input" id="rx-lname" placeholder="Last name"/>
+          </div>
+        </div>
+
+        <!-- Age & Gender -->
+        <div class="rx-row">
+          <div class="rx-field">
+            <label>Patient's Age:</label>
+            <input class="rx-input" id="rx-age" type="number" placeholder="e.g. 32"/>
+          </div>
+          <div class="rx-field">
+            <label>Gender:</label>
+            <select class="rx-input" id="rx-gender">
+              <option value="">Select</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Diagnosis / Treatment -->
+        <div class="rx-field">
+          <label>Diagnosis / Treatment:</label>
+          <input class="rx-input" id="rx-diag" placeholder="e.g. Viral fever, Type 2 Diabetes"/>
+        </div>
+
+        <!-- Medicines -->
+        <div class="rx-field">
+          <label>Rx: Medication / Strength / Frequency</label>
+          <div id="rx-meds"></div>
+          <button class="btn-add-med" onclick="addRxMed()">+ Add more</button>
+        </div>
+
+        <!-- Notes -->
+        <div class="rx-field">
+          <label>Additional notes:</label>
+          <textarea class="rx-input" id="rx-notes" rows="2" placeholder="Allergies, special instructions..."></textarea>
+        </div>
+
+        <!-- Date signed -->
+        <div class="rx-field">
+          <label>Date signed:</label>
+          <input class="rx-input" type="date" id="rx-date"/>
+        </div>
+
+        <!-- Signature -->
+        <div class="rx-field">
+          <label>Physician's signature:</label>
+          <div class="sig-pad-wrap">
+            <canvas id="sig-canvas" width="520" height="110"></canvas>
+            <div class="sig-hint" id="sig-hint">
+              <span style="font-size:12px">Sign here</span>
+              <div class="sig-hint-line"></div>
+            </div>
+          </div>
+          <div class="sig-actions">
+            <button class="btn-clear-sig" onclick="clearSig()">✕ Clear signature</button>
+            <span style="font-size:11px;color:var(--muted);align-self:center">Draw with mouse or touch</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('presc-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRx()">💾 Save prescription</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── VIEW PRESCRIPTION MODAL ── -->
+<div class="modal-overlay" id="view-modal" style="display:none">
+  <div class="modal modal-lg">
+    <div class="modal-title" id="view-title">Prescription <button class="modal-close" onclick="closeModal('view-modal')">×</button></div>
+    <div id="view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('prescriptions');
+const user = getUser();
+let medCount = 0;
+let sigDrawing = false;
+let sigHasMark = false;
+
+if (user.role === 'doctor') {
+  document.getElementById('new-presc-btn').style.display = '';
+  loadPatients();
+}
+
+// ── OPEN FORM ──
+function openPrescForm() {
+  medCount = 0;
+  document.getElementById('rx-meds').innerHTML = '';
+  document.getElementById('rx-fname').value = '';
+  document.getElementById('rx-lname').value = '';
+  document.getElementById('rx-age').value = '';
+  document.getElementById('rx-gender').value = '';
+  document.getElementById('rx-diag').value = '';
+  document.getElementById('rx-notes').value = '';
+  document.getElementById('rx-date').value = new Date().toISOString().split('T')[0];
+  addRxMed();
+  openModal('presc-modal');
+  setTimeout(initSig, 100);
+}
+
+// ── MEDICINE ROWS ──
+function addRxMed() {
+  medCount++;
+  const row = document.createElement('div');
+  row.className = 'rx-med-row';
+  row.id = `rxmed-${medCount}`;
+  row.innerHTML = `
+    <input placeholder="Medicine name" id="rxmn-${medCount}"/>
+    <input placeholder="Strength (e.g. 500mg)" id="rxms-${medCount}" style="max-width:130px"/>
+    <input placeholder="Frequency" id="rxmf-${medCount}" style="max-width:130px"/>
+    <button onclick="document.getElementById('rxmed-${medCount}').remove()" title="Remove">×</button>`;
+  document.getElementById('rx-meds').appendChild(row);
+}
+
+// ── SIGNATURE PAD ──
+function initSig() {
+  const canvas = document.getElementById('sig-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  sigHasMark = false;
+  document.getElementById('sig-hint').style.display = 'flex';
+
+  ctx.strokeStyle = '#0f766e';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+  }
+
+  canvas.onmousedown = canvas.ontouchstart = (e) => {
+    e.preventDefault();
+    sigDrawing = true;
+    sigHasMark = true;
+    document.getElementById('sig-hint').style.display = 'none';
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+  canvas.onmousemove = canvas.ontouchmove = (e) => {
+    e.preventDefault();
+    if (!sigDrawing) return;
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  };
+  canvas.onmouseup = canvas.ontouchend = () => { sigDrawing = false; };
+  canvas.onmouseleave = () => { sigDrawing = false; };
+}
+
+function clearSig() {
+  const canvas = document.getElementById('sig-canvas');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  sigHasMark = false;
+  document.getElementById('sig-hint').style.display = 'flex';
+  initSig();
+}
+
+
+// ── SAVE RX ──
+async function saveRx() {
+  const fname = document.getElementById('rx-fname').value.trim();
+  const lname = document.getElementById('rx-lname').value.trim();
+  const diag  = document.getElementById('rx-diag').value.trim();
+  const notes = document.getElementById('rx-notes').value.trim();
+  const patient_id = +document.getElementById('p-patient').value;
+
+  const medicines = [];
+  document.querySelectorAll('[id^="rxmn-"]').forEach(el => {
+    const n = el.id.split('-')[1];
+    const name = el.value.trim();
+    if (name) medicines.push({
+      name,
+      dosage:    document.getElementById(`rxms-${n}`).value,
+      frequency: document.getElementById(`rxmf-${n}`).value,
+      duration: '', instructions: ''
+    });
+  });
+
+  if (!patient_id) return showToast('Please select a patient from the list first', 'error');
+  if (!medicines.length) return showToast('Add at least one medicine', 'error');
+
+  const fullNotes = `${fname} ${lname}${notes ? ' · ' + notes : ''}`;
+  try {
+    await apiFetch('/prescriptions/', { method:'POST', body:JSON.stringify({patient_id, diagnosis:diag, notes:fullNotes, medicines}) });
+    showToast('Prescription saved!', 'success');
+    closeModal('presc-modal');
+    loadPrescs();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ── PATIENTS DROPDOWN ──
+async function loadPatients() {
+  const patients = await apiFetch('/doctors/patients');
+  document.getElementById('p-patient').innerHTML = patients.map(p =>
+    `<option value="${p.id}">${escHtml(p.name)}</option>`
+  ).join('') || '<option value="">No patients yet</option>';
+}
+
+// ── VIEW PRESCRIPTION ──
+function viewPresc(p) {
+  document.getElementById('view-title').innerHTML = `Prescription #${p.id} <button class="modal-close" onclick="closeModal('view-modal')">×</button>`;
+  document.getElementById('view-body').innerHTML = `
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:20px">
+        <div style="border:1.5px solid var(--border);border-radius:8px;padding:6px 16px;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--navy)">Medicare<span style="color:var(--teal)">+</span></div>
+        <div style="text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px">🩺</div>
+        </div>
+      </div>
+      <div style="border-left:3px solid var(--teal-pale);padding-left:18px;display:flex;flex-direction:column;gap:12px">
+        <div class="grid-2" style="gap:10px">
+          <div style="background:var(--bg);padding:10px;border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Patient</div>
+            <div style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700">${escHtml(p.patient_name)}</div>
+          </div>
+          <div style="background:var(--bg);padding:10px;border-radius:8px;border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:3px">Doctor</div>
+            <div style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700">${escHtml(p.doctor_name)}</div>
+          </div>
+        </div>
+        ${p.diagnosis ? `<div style="padding:10px;background:var(--teal-50);border-radius:8px;border-left:3px solid var(--teal)"><span style="font-size:11px;font-weight:700;color:var(--teal-dk)">DIAGNOSIS: </span><span style="font-weight:600">${escHtml(p.diagnosis)}</span></div>` : ''}
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Rx: Medicines</div>
+          ${p.medicines.map((m,i) => `
+            <div style="display:flex;gap:10px;padding:9px;background:${i%2===0?'var(--bg)':'#fff'};border-radius:8px;margin-bottom:4px;border:1px solid var(--border)">
+              <div style="width:22px;height:22px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${i+1}</div>
+              <div><div style="font-weight:700;font-size:13px;color:var(--navy)">${escHtml(m.name)}</div><div style="font-size:11.5px;color:var(--muted)">${[m.dosage,m.frequency,m.duration].filter(Boolean).join(' · ')}</div></div>
+            </div>`).join('')}
+        </div>
+        <div style="text-align:right;font-size:11px;color:var(--muted);padding-top:10px;border-top:1px solid var(--border)">${fmtDate(p.created_at)}</div>
+      </div>
+    </div>`;
+  openModal('view-modal');
+}
+
+// ── LOAD PRESCRIPTIONS LIST ──
+async function loadPrescs() {
+  try {
+    const list = await apiFetch('/prescriptions/');
+    const container = document.getElementById('presc-list');
+    if (!list.length) {
+      container.innerHTML = `<div class="card"><div class="empty-state"><div class="empty-icon">💊</div><div class="empty-text">No prescriptions yet</div><div class="empty-sub">${user.role==='doctor'?'Create your first prescription above':'Your prescriptions will appear here'}</div></div></div>`;
+      return;
+    }
+    container.innerHTML = list.map(p => `
+      <div class="presc-card">
+        <div class="presc-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--navy)">${escHtml(user.role==='patient'?p.doctor_name:p.patient_name)}</span>
+              <span class="presc-ref">#${p.id}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">${user.role==='patient'?'Prescribed by':'Patient'} · ${fmtDate(p.created_at)}</div>
+          </div>
+          <button class="btn btn-soft btn-sm" onclick='viewPresc(${JSON.stringify(p).replace(/'/g,"&#39;")})'>View & Print</button>
+        </div>
+        ${p.diagnosis ? `<div style="font-size:12.5px;color:var(--teal-dk);font-weight:600;margin-bottom:8px">Diagnosis: ${escHtml(p.diagnosis)}</div>` : ''}
+        <div>${p.medicines.map(m => `<span class="med-chip">💊 ${escHtml(m.name)}${m.dosage?' · '+m.dosage:''}</span>`).join('')}</div>
+      </div>`).join('');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+loadPrescs();
+</script>
+</body>
+</html>

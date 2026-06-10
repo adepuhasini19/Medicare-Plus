@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Emergency</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>🚨 Emergency Help</h1>
+      <p>Quick access to ambulance, hospitals and first aid</p>
+    </div>
+
+    <!-- SOS Button -->
+    <div class="card mb-20" style="text-align:center;padding:36px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">In case of emergency, call</div>
+      <a href="tel:108" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;background:var(--red);color:#fff;padding:18px 48px;border-radius:16px;font-size:22px;font-weight:700;text-decoration:none;letter-spacing:-.3px;transition:background .15s" onmouseover="this.style.background='#c73e3d'" onmouseout="this.style.background='var(--red)'">
+        🚑 Call 108 — Ambulance
+      </a>
+      <div style="font-size:12px;color:var(--text3);margin-top:12px">National emergency ambulance · Available 24/7 · Free of charge</div>
+    </div>
+
+    <div class="grid-2" style="gap:16px">
+      <!-- Ambulance -->
+      <div class="card">
+        <div class="section-title flex gap-8"><span>🚑</span> Ambulance Services</div>
+        <div id="ambulance-list"></div>
+      </div>
+      <!-- Hospitals -->
+      <div class="card">
+        <div class="section-title flex gap-8"><span>🏥</span> Nearby Hospitals</div>
+        <div id="hospital-list"></div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:16px;margin-top:16px">
+      <div class="card">
+        <div class="section-title flex gap-8"><span>👮</span> Police & Fire</div>
+        <div id="police-list"></div>
+      </div>
+      <div class="card" style="background:var(--teal-50);border-color:var(--teal-pale)">
+        <div class="section-title">First aid tips</div>
+        <div id="firstaid-list" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('emergency');
+
+async function loadContacts() {
+  try {
+    const contacts = await apiFetch('/emergency/');
+    const ambulance = contacts.filter(c=>c.contact_type==='ambulance');
+    const hospitals = contacts.filter(c=>c.contact_type==='hospital');
+    const police    = contacts.filter(c=>c.contact_type==='police'||c.contact_type==='fire');
+
+    const render = (list, containerId, color) => {
+      const el = document.getElementById(containerId);
+      if (!list.length) { el.innerHTML='<div style="color:var(--text3);font-size:13px">No contacts found</div>'; return; }
+      el.innerHTML = list.map(c => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border2)">
+          <div style="font-weight:600;font-size:13.5px">${escHtml(c.name)}</div>
+          <a href="tel:${escHtml(c.number)}" style="background:${color};color:#fff;padding:7px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:.5px">${escHtml(c.number)}</a>
+        </div>`).join('');
+    };
+
+    render(ambulance, 'ambulance-list', 'var(--red)');
+    render(hospitals, 'hospital-list', 'var(--blue)');
+    render(police, 'police-list', '#374151');
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+loadContacts();
+
+// Render first aid tips
+const tips = [
+  ['🫀','Chest pain','Rest, loosen clothing. Call 108 immediately.'],
+  ['🩸','Heavy bleeding','Apply firm pressure. Elevate if possible.'],
+  ['🧠','Unconscious','Check breathing. Recovery position. Call 108.'],
+  ['🔥','Burns','Cool under running water for 10 min. No ice.'],
+  ['💊','Poisoning','Do NOT induce vomiting. Call Poison Control.'],
+];
+document.getElementById('firstaid-list').innerHTML = tips.map(([icon,title,tip]) =>
+  `<div style="display:flex;gap:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid var(--border)">
+    <span style="font-size:20px;flex-shrink:0">${icon}</span>
+    <div>
+      <div style="font-weight:600;font-size:13px;color:var(--navy)">${title}</div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:2px">${tip}</div>
+    </div>
+  </div>`
+).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ — Smart Healthcare Made Simple</title>
+<!-- v3 updated -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230d9488'/%3E%3Cpath d='M18 6H14V14H6V18H14V26H18V18H26V14H18V6Z' fill='white'/%3E%3C/svg%3E"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0d9488;--teal-l:#14b8a6;--teal-dk:#0f766e;
+  --teal-pale:#ccfbf1;--teal-50:#f0fdfa;
+  --navy:#0b1120;--slate:#334155;--muted:#64748b;
+  --border:#e2e8f0;--bg:#f8fafc;
+  --sh-sm:0 4px 16px rgba(0,0,0,.07);
+  --sh-md:0 8px 32px rgba(0,0,0,.1);
+  --sh-teal:0 6px 20px rgba(13,148,136,.25)
+}
+body{font-family:'Inter',sans-serif;background:#fff;color:var(--navy);overflow-x:hidden}
+nav,section,.hero,footer{position:relative;z-index:1}
+a{text-decoration:none;color:inherit}
+h1,h2,h3{font-family:'Playfair Display',serif;line-height:1.2}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .5s ease var(--delay,0s),transform .5s ease var(--delay,0s)}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);padding:0 5%}.nav-inner{max-width:1200px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:9px}
+.nav-logo-icon{width:30px;height:30px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-brand{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--navy)}
+.nav-brand strong{color:var(--teal)}
+.nav-links{display:flex;gap:4px}
+.nav-link{font-size:.86rem;font-weight:500;color:var(--muted);padding:.4rem .85rem;border-radius:7px;transition:all .15s}
+.nav-link:hover{background:var(--bg);color:var(--navy)}
+.nav-right{display:flex;align-items:center;gap:9px}
+.btn-login-nav{padding:8px 18px;border:1.5px solid var(--border);border-radius:8px;background:#fff;color:var(--navy);font-size:.84rem;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-login-nav:hover{border-color:var(--teal);color:var(--teal)}
+.btn-appt-nav{padding:9px 20px;background:var(--teal);border:none;border-radius:8px;color:#fff;font-size:.84rem;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--sh-teal)}
+.btn-appt-nav:hover{background:var(--teal-dk)}
+
+/* ── HERO ── */
+.hero{background:#fff;padding:5rem 5% 4rem;border-bottom:1px solid var(--border);position:relative;z-index:1}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--teal-50);border:1px solid var(--teal-pale);border-radius:99px;padding:5px 14px;font-size:.75rem;font-weight:700;color:var(--teal-dk);margin-bottom:1.2rem;text-transform:uppercase;letter-spacing:.06em}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.hero-h1{font-size:clamp(2.2rem,4vw,3.2rem);font-weight:700;color:var(--navy);margin-bottom:1rem;line-height:1.1;letter-spacing:-.5px}
+.hero-h1 em{color:var(--teal);font-style:normal}
+.hero-sub{font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:2rem;max-width:460px}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:2.5rem}
+.btn-hero-p{display:inline-flex;align-items:center;gap:7px;background:var(--teal);color:#fff;font-size:.92rem;font-weight:700;padding:.85rem 1.8rem;border-radius:10px;box-shadow:var(--sh-teal);transition:all .2s;font-family:inherit}
+.btn-hero-p:hover{background:var(--teal-dk);transform:translateY(-1px)}
+.btn-hero-s{display:inline-flex;align-items:center;gap:7px;background:#fff;color:var(--navy);font-size:.92rem;font-weight:600;padding:.85rem 1.8rem;border-radius:10px;border:1.5px solid var(--border);transition:all .2s;font-family:inherit}
+.btn-hero-s:hover{border-color:var(--teal);color:var(--teal)}
+.hero-stats{display:flex;gap:2rem}
+.h-stat-num{font-size:1.4rem;font-weight:800;color:var(--navy);letter-spacing:-.4px;font-family:'Inter',sans-serif}
+.h-stat-lbl{font-size:.73rem;color:var(--muted);margin-top:2px}
+.h-stat-sep{width:1px;background:var(--border);margin:0}
+
+/* hero visual */
+.hero-visual{position:relative}
+.hero-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--sh-md)}
+.hero-card-sm{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--sh-sm);position:absolute}
+.hc-tl{top:-18px;left:-18px;width:185px;animation:float 4s ease-in-out infinite}
+.hc-br{bottom:-18px;right:-18px;width:175px;animation:float 4s ease-in-out infinite .8s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.card-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.doc-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bg)}
+.doc-row:last-child{border:none;padding-bottom:0}
+.doc-av-sm{width:32px;height:32px;border-radius:50%;background:var(--teal-50);border:1.5px solid var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:var(--teal-dk);flex-shrink:0}
+.doc-name-sm{font-size:.82rem;font-weight:600;color:var(--navy)}
+.doc-spec-sm{font-size:.7rem;color:var(--muted)}
+.pill-avail{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:99px;margin-left:auto;flex-shrink:0}
+.pill-on{background:#dcfce7;color:#166534}
+.pill-off{background:#fef3c7;color:#92400e}
+
+/* ── FEATURE STRIP ── */
+
+/* ── FEATURES ── */
+.sec-head{text-align:center;margin-bottom:2.8rem;position:relative}
+.eyebrow{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);background:var(--teal-pale);padding:.22rem .75rem;border-radius:99px;margin-bottom:.65rem}
+.sec-head h2{font-size:clamp(1.7rem,3vw,2.3rem);color:var(--navy);margin-bottom:.4rem}
+.sec-head p{color:var(--muted);font-size:.93rem}
+
+/* ── HOW ── */
+.how-sec{padding:5rem 5%;background:var(--bg);border-top:1px solid var(--border);position:relative;overflow:hidden;z-index:1}
+.how-inner{max-width:960px;margin:0 auto}
+.steps{display:grid;grid-template-columns:1fr 36px 1fr 36px 1fr;gap:0;margin-top:2.8rem;align-items:start}
+.step{text-align:center}
+.step-num{width:48px;height:48px;border-radius:50%;background:var(--teal-50);border:2px solid var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:var(--teal-dk);margin:0 auto 12px;font-family:'Inter',sans-serif}
+.step-title{font-family:'Playfair Display',serif;font-size:.97rem;margin-bottom:6px;color:var(--navy)}
+.step-desc{font-size:.79rem;color:var(--muted);line-height:1.65}
+.step-arr{display:flex;align-items:center;justify-content:center;padding-top:14px;color:var(--border);font-size:1.3rem}
+
+/* ── DOCTORS ── */
+.docs-sec{padding:5rem 5%;background:var(--bg);border-top:1px solid var(--border);position:relative;overflow:hidden;z-index:1}
+.docs-inner{max-width:1200px;margin:0 auto}
+.doctors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:2.8rem}
+.doc-card{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;text-align:center;transition:box-shadow .2s,transform .2s;padding:0 0 16px;display:flex;flex-direction:column;align-items:center}
+.doc-card:hover{box-shadow:0 10px 32px rgba(0,0,0,.11);transform:translateY(-4px)}
+.doc-photo-box{width:150px;height:150px;border-radius:16px;overflow:hidden;background:var(--teal-50);margin:18px auto 12px;flex-shrink:0;border:2px solid var(--teal-pale)}
+.doc-photo-box img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.doc-photo-box .doc-init{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;color:var(--teal-dk)}
+.doc-card-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:6px;padding:0 12px}
+.doc-exp-pill{display:inline-block;background:var(--teal-50);border:1px solid var(--teal-pale);color:var(--teal-dk);font-size:.76rem;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:6px}
+.doc-card-spec{font-size:.82rem;color:var(--muted);margin-bottom:8px}
+.doc-card-stats{display:flex;gap:10px;justify-content:center;margin-bottom:8px}
+.doc-card-stat{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:3px}
+.doc-card-stat strong{color:var(--navy);font-weight:700}
+.doc-card-fee{font-size:.8rem;color:var(--muted);margin-bottom:14px}
+.doc-card-fee strong{color:var(--teal-dk);font-weight:700}
+.btn-book-now{width:calc(100% - 32px);padding:10px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 12px rgba(13,148,136,.25);transition:background .15s}
+.btn-book-now:hover{background:var(--teal-dk)}
+
+/* ── EMERGENCY BAR ── */
+.emer-bar{background:#fff0f0;border-top:1px solid #fecaca;border-bottom:1px solid #fecaca;padding:15px 5%;position:relative;z-index:1}
+.emer-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.emer-text{font-size:.88rem;font-weight:700;color:#dc2626}
+.emer-sub{font-size:.76rem;color:#9b1c1c;margin-top:2px}
+.btn-emer{padding:9px 20px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+.btn-emer:hover{background:#dc2626}
+
+/* ── CTA ── */
+.cta-sec{padding:5rem 5%;background:var(--teal-50);border-top:1px solid var(--teal-pale);text-align:center;position:relative;overflow:hidden;z-index:1}
+.cta-content{max-width:540px;margin:0 auto}
+.cta-icon{width:56px;height:56px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;border:1px solid var(--teal-pale);box-shadow:var(--sh-sm)}
+.cta-content h2{font-size:clamp(1.7rem,3vw,2.2rem);color:var(--navy);margin-bottom:.7rem}
+.cta-content p{color:var(--muted);font-size:.96rem;margin-bottom:1.8rem;line-height:1.7}
+.cta-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
+.btn-cta-p{background:var(--teal);color:#fff;font-size:.9rem;font-weight:700;padding:.8rem 1.8rem;border-radius:10px;box-shadow:var(--sh-teal);transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-cta-p:hover{background:var(--teal-dk);transform:translateY(-1px)}
+.btn-cta-s{background:#fff;color:var(--navy);font-size:.9rem;font-weight:600;padding:.8rem 1.8rem;border-radius:10px;border:1.5px solid var(--border);transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:6px}
+.btn-cta-s:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ── FOOTER ── */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 5%}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.footer-logo{display:flex;align-items:center;gap:8px}
+.footer-logo-mark{width:24px;height:24px;background:var(--teal);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.footer-brand{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--navy)}
+.footer-brand strong{color:var(--teal)}
+.footer-links{display:flex;gap:18px;flex-wrap:wrap}
+.footer-link{font-size:.82rem;color:var(--muted);transition:color .15s}
+.footer-link:hover{color:var(--navy)}
+.footer-copy{font-size:.76rem;color:var(--muted)}
+
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr;gap:2.5rem}.hero-visual{display:none}.nav-links{display:none}.fstrip-inner{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}.step-arr{display:none}}
+@media(max-width:600px){.hero{padding:3.5rem 5% 3rem}.hero-btns{flex-direction:column}.fstrip-inner{grid-template-columns:1fr}.cta-btns{flex-direction:column;align-items:center}}
+
+/* doc photos handled in card CSS above */
+
+/* ── REVIEWS ── */
+.reviews-sec{padding:5rem 5%;background:#fff;border-top:1px solid var(--border);position:relative;overflow:hidden;z-index:1}
+.reviews-inner{max-width:1200px;margin:0 auto}
+.reviews-track-wrap{position:relative;display:flex;align-items:center;gap:10px;margin-top:2.5rem}
+.reviews-track{display:flex;gap:18px;overflow-x:auto;scroll-behavior:smooth;padding:8px 4px 16px;flex:1;-ms-overflow-style:none;scrollbar-width:none}
+.reviews-track::-webkit-scrollbar{display:none}
+.rev-card{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:22px 24px;min-width:300px;max-width:300px;flex-shrink:0;transition:box-shadow .2s,transform .2s}
+.rev-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(-3px)}
+.rev-stars{color:#F59E0B;font-size:16px;margin-bottom:10px;letter-spacing:2px}
+.rev-text{font-size:13.5px;color:var(--slate);line-height:1.7;font-style:italic;margin-bottom:14px}
+.rev-author{display:flex;align-items:center;gap:10px}
+.rev-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.rev-name{font-size:13px;font-weight:700;color:var(--navy)}
+.rev-role{font-size:11.5px;color:var(--muted);margin-top:2px}
+.rev-arrow{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border);background:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;flex-shrink:0;line-height:1}
+.rev-arrow:hover{border-color:var(--teal);color:var(--teal);background:var(--teal-50)}
+
+/* ── FEATURES SHOWCASE ── */
+.showcase-sec{padding:5rem 5%;background:linear-gradient(160deg,#f0fdfa 0%,#fff 40%,#f8fafc 100%);border-top:1px solid var(--border);position:relative;overflow:hidden;z-index:1}
+.showcase-inner{max-width:1200px;margin:0 auto;position:relative}
+.showcase-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:2.8rem}
+.sc-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:22px 18px 18px;position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s;cursor:default}
+.sc-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(13,148,136,.12)}
+.sc-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:14px;transition:transform .3s}
+.sc-card:hover .sc-icon{transform:scale(1.15) rotate(-5deg)}
+.sc-card h4{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:7px;line-height:1.35}
+.sc-card p{font-size:.77rem;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.sc-bar{height:3px;border-radius:99px;background:var(--bc,var(--teal));width:0;transition:width 1s ease;margin-top:auto}
+.sc-card.visible .sc-bar{width:60%}
+
+
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-icon"><svg viewBox="0 0 28 28" fill="none" width="18" height="18"><path d="M16 5H12V12H5V16H12V23H16V16H23V12H16V5Z" fill="white"/></svg></div>
+      <span class="nav-brand">Medicare<strong>+</strong></span>
+    </a>
+    <div class="nav-links">
+      <a href="#how" class="nav-link">How it works</a>
+      <a href="#doctors" class="nav-link">Doctors</a>
+      <a href="emergency.html" class="nav-link" style="color:#ef4444;font-weight:600">🚨 Emergency</a>
+    </div>
+    <div class="nav-right">
+      <a href="login.html" class="btn-login-nav">Login</a>
+      <a href="login.html?tab=register" class="btn-appt-nav">📅 Book Appointment</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">  <div class="hero-inner">
+    <div class="reveal">
+      <div class="hero-eyebrow"><div class="hero-dot"></div>Hyderabad's Trusted Healthcare Platform</div>
+      <h1 class="hero-h1">Smart Healthcare<br/><em>At Your Fingertips</em></h1>
+      <p class="hero-sub">Book appointments with top specialists, get digital prescriptions, check symptoms, and manage all your health records — in one simple platform.</p>
+      <div class="hero-btns">
+        <a href="login.html?tab=register" class="btn-hero-p">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Book Appointment
+        </a>
+        <a href="login.html" class="btn-hero-s">Sign In →</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="h-stat-num">8+</div><div class="h-stat-lbl">Specialists</div></div>
+        <div class="h-stat-sep"></div>
+        <div><div class="h-stat-num">10</div><div class="h-stat-lbl">Features</div></div>
+        <div class="h-stat-sep"></div>
+        <div><div class="h-stat-num">24/7</div><div class="h-stat-lbl">Available</div></div>
+        <div class="h-stat-sep"></div>
+        <div><div class="h-stat-num">98%</div><div class="h-stat-lbl">Satisfaction</div></div>
+      </div>
+    </div>
+    <div class="hero-visual reveal" style="--delay:.15s">
+      <div class="hero-card-sm hc-tl">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;background:var(--teal-50);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px">✓</div>
+          <div>
+            <div style="font-size:.75rem;font-weight:700;color:var(--navy)">Appointment confirmed</div>
+            <div style="font-size:.68rem;color:var(--muted)">Dr. Priya · 10:30 AM</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-card">
+        <div class="card-label">Available today</div>
+        <div class="doc-row"><div class="doc-av-sm">P</div><div><div class="doc-name-sm">Dr. Priya Sharma</div><div class="doc-spec-sm">Cardiologist · 12 yrs</div></div><span class="pill-avail pill-on">Open</span></div>
+        <div class="doc-row"><div class="doc-av-sm">A</div><div><div class="doc-name-sm">Dr. Arjun Reddy</div><div class="doc-spec-sm">Neurologist · 15 yrs</div></div><span class="pill-avail pill-on">Open</span></div>
+        <div class="doc-row"><div class="doc-av-sm">M</div><div><div class="doc-name-sm">Dr. Meera Nair</div><div class="doc-spec-sm">Pediatrician · 8 yrs</div></div><span class="pill-avail pill-off">Busy</span></div>
+        <div class="doc-row"><div class="doc-av-sm">R</div><div><div class="doc-name-sm">Dr. Ravi Kumar</div><div class="doc-spec-sm">General Physician · 20 yrs</div></div><span class="pill-avail pill-on">Open</span></div>
+      </div>
+      <div class="hero-card-sm hc-br">
+        <div style="font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Symptom Checker</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="background:var(--teal-50);border:1px solid var(--teal-pale);border-radius:99px;font-size:.67rem;padding:2px 7px;color:var(--teal-dk);font-weight:500">Fever</span>
+          <span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:99px;font-size:.67rem;padding:2px 7px;color:#1e40af;font-weight:500">Headache</span>
+          <span style="background:#fef3c7;border:1px solid #fde68a;border-radius:99px;font-size:.67rem;padding:2px 7px;color:#92400e;font-weight:500">Cough</span>
+        </div>
+        <div style="margin-top:7px;font-size:.73rem;color:var(--teal-dk);font-weight:600">→ See General Physician</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── EMERGENCY BAR ── -->
+<div class="emer-bar">
+  <div class="emer-inner">
+    <div><div class="emer-text">🚨 Medical Emergency?</div><div class="emer-sub">One-tap access to ambulance · hospitals · first aid guide</div></div>
+    <a href="emergency.html" class="btn-emer">Open Emergency Help →</a>
+  </div>
+</div>
+
+<!-- ── FEATURES SHOWCASE ── -->
+<section class="showcase-sec" id="features">
+  <div class="showcase-inner">
+    <div class="sec-head reveal">      <span class="eyebrow">Everything You Need</span><h2>Powerful Healthcare Features</h2><p>From booking to prescriptions — Medicare+ covers your full healthcare journey.</p>
+    </div>    <div class="showcase-grid">
+      <div class="sc-card reveal" style="--delay:0s">
+        <div class="sc-icon" style="background:#e0f2fe">📅</div>
+        <h4>Smart Appointment Booking</h4>
+        <p>Real-time slot availability. No double bookings. Book by specialty, date and time.</p>
+        <div class="sc-bar"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.06s">
+        <div class="sc-icon" style="background:#f0fdf4">💊</div>
+        <h4>Digital Prescriptions</h4>
+        <p>Doctors create full prescriptions with medicines and dosage. Save digitally.</p>
+        <div class="sc-bar" style="--bc:#22c55e"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.12s">
+        <div class="sc-icon" style="background:#fdf4ff">🤖</div>
+        <h4>Symptom Checker</h4>
+        <p>Select symptoms, get possible conditions and recommended specialists instantly.</p>
+        <div class="sc-bar" style="--bc:#a855f7"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.18s">
+        <div class="sc-icon" style="background:#fff1f2">🚨</div>
+        <h4>Emergency Help</h4>
+        <p>One-tap ambulance call, hospital numbers, and first aid guide. Available 24/7.</p>
+        <div class="sc-bar" style="--bc:#ef4444"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.24s">
+        <div class="sc-icon" style="background:#fefce8">⏰</div>
+        <h4>Medicine Reminders</h4>
+        <p>Set daily reminders with custom dosage, time and frequency. Never miss a dose.</p>
+        <div class="sc-bar" style="--bc:#eab308"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.30s">
+        <div class="sc-icon" style="background:#eff6ff">💬</div>
+        <h4>Doctor–Patient Chat</h4>
+        <p>Secure direct messaging between patients and doctors. Full history saved.</p>
+        <div class="sc-bar" style="--bc:#3b82f6"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.36s">
+        <div class="sc-icon" style="background:#f0fdfa">📋</div>
+        <h4>Health Dashboard</h4>
+        <p>All appointments, prescriptions, reports and reminders in one clean overview.</p>
+        <div class="sc-bar" style="--bc:#14b8a6"></div>
+      </div>
+      <div class="sc-card reveal" style="--delay:.42s">
+        <div class="sc-icon" style="background:#fff7ed">📁</div>
+        <h4>Medical Report Upload</h4>
+        <p>Upload PDF or image reports. Access your full health history anytime.</p>
+        <div class="sc-bar" style="--bc:#f97316"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how-sec" id="how">
+  <div class="how-inner">
+    <div class="sec-head reveal">      <span class="eyebrow">Simple Process</span><h2>How Medicare+ Works</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num">1</div><div class="step-title">Create Account</div><p class="step-desc">Register as patient or doctor in under 30 seconds. No paperwork required.</p></div>
+      <div class="step-arr">→</div>
+      <div class="step reveal" style="--delay:.12s"><div class="step-num">2</div><div class="step-title">Find & Book</div><p class="step-desc">Search doctors by specialty, check real-time availability, book your slot.</p></div>
+      <div class="step-arr">→</div>
+      <div class="step reveal" style="--delay:.24s"><div class="step-num">3</div><div class="step-title">Get Care</div><p class="step-desc">Attend your appointment, receive digital prescription, manage health records.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DOCTORS ── -->
+<section class="docs-sec" id="doctors">
+  <div class="docs-inner">
+    <div class="sec-head reveal">      <span class="eyebrow">Our Specialists</span><h2>Meet Your Care Team</h2><p>Experienced specialists across all major fields, ready to help you.</p>
+    </div>
+    <div class="doctors-grid">
+      <div class="doc-card reveal">
+        <div class="doc-photo-box"><img src="https://img.freepik.com/free-photo/beautiful-young-female-doctor-looking-camera-office_1301-7807.jpg?semt=ais_hybrid&w=740&q=80" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">P</div></div>
+        <div class="doc-card-name">Dr. Priya Sharma</div>
+        <span class="doc-exp-pill">12 yrs experience</span>
+        <div class="doc-card-spec">Cardiologist</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.8</strong></div>
+          <div class="doc-card-stat">✓ <strong>98%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹800</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+      <div class="doc-card reveal" style="--delay:.07s">
+        <div class="doc-photo-box"><img src="https://www.shutterstock.com/image-photo/portrait-handsome-male-doctor-stethoscope-600nw-2480850611.jpg" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">A</div></div>
+        <div class="doc-card-name">Dr. Arjun Reddy</div>
+        <span class="doc-exp-pill">15 yrs experience</span>
+        <div class="doc-card-spec">Neurologist</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.9</strong></div>
+          <div class="doc-card-stat">✓ <strong>99%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹1000</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+      <div class="doc-card reveal" style="--delay:.14s">
+        <div class="doc-photo-box"><img src="https://plus.unsplash.com/premium_photo-1664475450083-5c9eef17a191?fm=jpg&q=60&w=3000&auto=format&fit=crop" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">M</div></div>
+        <div class="doc-card-name">Dr. Meera Nair</div>
+        <span class="doc-exp-pill">8 yrs experience</span>
+        <div class="doc-card-spec">Pediatrician</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.7</strong></div>
+          <div class="doc-card-stat">✓ <strong>97%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹500</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+      <div class="doc-card reveal" style="--delay:.21s">
+        <div class="doc-photo-box"><img src="https://img.freepik.com/free-photo/smiling-asian-male-doctor-pointing-upwards_1262-18321.jpg" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">R</div></div>
+        <div class="doc-card-name">Dr. Ravi Kumar</div>
+        <span class="doc-exp-pill">20 yrs experience</span>
+        <div class="doc-card-spec">General Physician</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.9</strong></div>
+          <div class="doc-card-stat">✓ <strong>99%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹400</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+      <div class="doc-card reveal" style="--delay:.28s">
+        <div class="doc-photo-box"><img src="https://t3.ftcdn.net/jpg/04/43/33/46/360_F_443334611_LWOYm4T463bkhZD8wTojJdeEzQ40DUWX.jpg" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">V</div></div>
+        <div class="doc-card-name">Dr. Vikram Patel</div>
+        <span class="doc-exp-pill">10 yrs experience</span>
+        <div class="doc-card-spec">Orthopedist</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.6</strong></div>
+          <div class="doc-card-stat">✓ <strong>96%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹700</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+      <div class="doc-card reveal" style="--delay:.35s">
+        <div class="doc-photo-box"><img src="https://t3.ftcdn.net/jpg/15/75/74/62/360_F_1575746216_ZS5ovZG1rHulQUatTq0WVno9BGInMCwW.jpg" onerror="this.style.display='none';this.parentElement.querySelector('.doc-init').style.display='flex'"/><div class="doc-init" style="display:none">S</div></div>
+        <div class="doc-card-name">Dr. Sunita Rao</div>
+        <span class="doc-exp-pill">14 yrs experience</span>
+        <div class="doc-card-spec">Gynecologist</div>
+        <div class="doc-card-stats">
+          <div class="doc-card-stat">⭐ <strong>4.8</strong></div>
+          <div class="doc-card-stat">✓ <strong>98%</strong> success</div>
+        </div>
+        <div class="doc-card-fee">Fee: <strong>₹750</strong> / visit</div>
+        <a href="login.html" class="btn-book-now">Book Now</a>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:1.8rem">
+      <a href="login.html" style="display:inline-flex;align-items:center;gap:7px;padding:10px 24px;background:#fff;border:1.5px solid var(--border);border-radius:9px;font-size:.84rem;font-weight:600;color:var(--navy);transition:all .15s" onmouseover="this.style.borderColor='#0d9488';this.style.color='#0f766e'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#0b1120'">View all doctors →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── REVIEWS ── -->
+<section class="reviews-sec" id="reviews">
+  <div class="reviews-inner">
+    <div class="sec-head reveal">      <span class="eyebrow">What People Say</span><h2>Patient & Doctor Reviews</h2><p>Real experiences from our Medicare+ community.</p>
+    </div>
+    <div class="reviews-track-wrap">
+      <button class="rev-arrow rev-prev" onclick="scrollReviews(-1)">&#8249;</button>
+      <div class="reviews-track" id="reviews-track">
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"Booked an appointment with Dr. Priya within 2 minutes. The prescription was ready digitally right after the visit. Amazing experience!"</p>
+          <div class="rev-author"><div class="rev-av" style="background:#e0f2fe;color:#0369a1">R</div><div><div class="rev-name">Rahul Verma</div><div class="rev-role">Patient · Hyderabad</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"The digital prescription feature saves me so much time. My patients can access their prescriptions anytime. Medicare+ is a game changer."</p>
+          <div class="rev-author"><div class="rev-av" style="background:#f0fdf4;color:#166534">P</div><div><div class="rev-name">Dr. Priya Sharma</div><div class="rev-role">Cardiologist · 12 yrs exp</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"The symptom checker is incredibly accurate. It suggested I see a Neurologist and Dr. Arjun diagnosed my condition perfectly. Highly recommend!"</p>
+          <div class="rev-author"><div class="rev-av" style="background:#fdf4ff;color:#7e22ce">A</div><div><div class="rev-name">Ananya Krishnan</div><div class="rev-role">Patient · Bangalore</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★☆</div>
+          <p class="rev-text">"Managing my patients through the dashboard is effortless. The chat feature means I can follow up with patients between appointments easily."</p>
+          <div class="rev-author"><div class="rev-av" style="background:#fef3c7;color:#92400e">K</div><div><div class="rev-name">Dr. Karan Mehta</div><div class="rev-role">Psychiatrist · 9 yrs exp</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"Medicine reminders saved me from missing my diabetes medication. The app notifies me on time every day. My sugar levels have never been better!"</p>
+          <div class="rev-author"><div class="rev-av" style="background:#fff1f2;color:#9f1239">S</div><div><div class="rev-name">Suresh Reddy</div><div class="rev-role">Patient · Hyderabad</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"Uploading my MRI reports and sharing them with my doctor before the appointment made the consultation so much more productive. Wonderful platform."</p>
+          <div class="rev-author"><div class="rev-av" style="background:#ecfdf5;color:#065f46">M</div><div><div class="rev-name">Meghna Pillai</div><div class="rev-role">Patient · Chennai</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"As a pediatrician, tracking young patients and sending digital prescriptions has made my practice so much smoother. Parents love the reminders!"</p>
+          <div class="rev-author"><div class="rev-av" style="background:#f0fdfa;color:#0f766e">M</div><div><div class="rev-name">Dr. Meera Nair</div><div class="rev-role">Pediatrician · 8 yrs exp</div></div></div>
+        </div>
+        <div class="rev-card">
+          <div class="rev-stars">★★★★★</div>
+          <p class="rev-text">"Found Dr. Ravi Kumar through the doctor search in 30 seconds. Booked a slot the same day. The emergency contacts feature is a lifesaver too!"</p>
+          <div class="rev-author"><div class="rev-av" style="background:#eff6ff;color:#1d4ed8">V</div><div><div class="rev-name">Venkat Naidu</div><div class="rev-role">Patient · Vijayawada</div></div></div>
+        </div>
+      </div>
+      <button class="rev-arrow rev-next" onclick="scrollReviews(1)">&#8250;</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-sec">  <div class="cta-content reveal">
+    <div class="cta-icon"><svg viewBox="0 0 28 28" fill="none" width="22" height="22"><path d="M16 5H12V12H5V16H12V23H16V16H23V12H16V5Z" fill="#0d9488"/></svg></div>
+    <h2>Ready to Take Control<br/>of Your Health?</h2>
+    <p>Join Medicare+ today. Book your first appointment in under 2 minutes. Free to register.</p>
+    <div class="cta-btns">
+      <a href="login.html?tab=register" class="btn-cta-p">Get started free →</a>
+      <a href="login.html" class="btn-cta-s">Sign in</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="footer-logo-mark"><svg viewBox="0 0 28 28" fill="none" width="16" height="16"><path d="M16 5H12V12H5V16H12V23H16V16H23V12H16V5Z" fill="white"/></svg></div>
+      <span class="footer-brand">Medicare<strong>+</strong></span>
+    </div>
+    <div class="footer-links">
+      <a href="#doctors" class="footer-link">Doctors</a>
+      <a href="#how" class="footer-link">How it works</a>
+      <a href="#reviews" class="footer-link">Reviews</a>
+      <a href="emergency.html" class="footer-link">Emergency</a>
+      <a href="login.html" class="footer-link">Login</a>
+      <a href="login.html?tab=register" class="footer-link">Register</a>
+    </div>
+    <div class="footer-copy">© 2025 Medicare+. Built for Hyderabad.</div>
+  </div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);} }), {threshold:.1});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'}); }));
+if(localStorage.getItem('token')){
+  const nr = document.querySelector('.nav-right');
+  if(nr) nr.innerHTML = `<a href="dashboard.html" style="padding:9px 20px;background:var(--teal);color:#fff;border:none;border-radius:8px;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 20px rgba(13,148,136,.25)">⊞ Dashboard →</a>`;
+}
+
+
+function scrollReviews(dir) {
+  const track = document.getElementById('reviews-track');
+  const card = track.querySelector('.rev-card');
+  const cardW = card.offsetWidth + 20;
+  track.scrollBy({ left: dir * cardW * 2, behavior: 'smooth' });
+}
+// Auto scroll reviews
+setInterval(() => {
+  const track = document.getElementById('reviews-track');
+  if (!track) return;
+  const maxScroll = track.scrollWidth - track.clientWidth;
+  if (track.scrollLeft >= maxScroll - 10) track.scrollTo({ left: 0, behavior: 'smooth' });
+  else track.scrollBy({ left: track.querySelector('.rev-card').offsetWidth + 20, behavior: 'smooth' });
+}, 4000);
+</script>
+</body>
+</html>

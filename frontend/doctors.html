@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Find Doctors</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.filter-bar{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.doctor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.doc-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:18px 16px 16px;text-align:center;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;align-items:center}
+.doc-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.1);transform:translateY(-3px)}
+.doc-photo-wrap{width:140px;height:140px;border-radius:16px;overflow:hidden;background:var(--teal-50);margin:0 auto 14px;flex-shrink:0}
+.doc-photo-wrap img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.doc-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:var(--teal-dk);background:var(--teal-50)}
+.doc-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.doc-exp-badge{display:inline-block;background:var(--teal-50);border:1px solid var(--teal-pale);color:var(--teal-dk);font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:8px}
+.doc-specialty{font-size:13px;color:var(--muted);margin-bottom:6px}
+.stars-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:14px}
+.star{font-size:13px;line-height:1}
+.star.filled{color:#F59E0B}
+.star.half{color:#F59E0B;opacity:.6}
+.star.empty{color:#E5E7EB}
+.rating-num{font-size:12px;font-weight:700;color:var(--navy)}
+.rating-count{font-size:11px;color:var(--muted)}
+.top-badge{display:inline-flex;align-items:center;gap:3px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;margin-left:4px}
+.btn-book{width:100%;padding:10px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;box-shadow:0 3px 10px rgba(13,148,136,.2);margin-top:auto}
+.btn-book:hover{background:var(--teal-dk)}
+.doc-bottom{display:flex;gap:8px;width:100%;margin-top:auto}
+.btn-rate{padding:10px 12px;background:#fff;color:var(--teal-dk);border:1.5px solid var(--teal-pale);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn-rate:hover{background:var(--teal-pale)}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>Find Doctors</h1>
+      <p>Search and filter from our network of specialists</p>
+    </div>
+
+    <div class="filter-bar">
+      <div class="form-group" style="margin:0;flex:1;min-width:180px">
+        <label class="form-label">Specialty</label>
+        <select class="form-select" id="f-specialty" onchange="applyFilters()">
+          <option value="">All specialties</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;min-width:140px">
+        <label class="form-label">Max fees (₹)</label>
+        <input class="form-input" type="number" id="f-fees" placeholder="Any" onchange="applyFilters()"/>
+      </div>
+      <div class="form-group" style="margin:0;min-width:140px">
+        <label class="form-label">Min experience (yrs)</label>
+        <input class="form-input" type="number" id="f-exp" placeholder="Any" onchange="applyFilters()"/>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()">Clear</button>
+    </div>
+
+    <div id="result-count" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
+    <div class="doctor-grid" id="doctors-grid"></div>
+  </main>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="review-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Rate Doctor <button class="modal-close" onclick="closeModal('review-modal')">×</button></div>
+    <div id="review-doctor-name" style="font-weight:600;margin-bottom:16px;font-size:15px;color:var(--navy)"></div>
+    <div class="form-group">
+      <label class="form-label">Your Rating</label>
+      <div id="star-picker" style="display:flex;gap:8px;font-size:32px;margin:10px 0"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Comment (optional)</label>
+      <textarea class="form-textarea" id="review-comment" placeholder="Share your experience..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('review-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitReview()">Submit review</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('doctors');
+let allDoctors = [];
+let selectedRating = 0;
+
+// Doctor photos — provided URLs
+const doctorPhotos = {
+  'Dr. Priya Sharma':  'https://img.freepik.com/free-photo/beautiful-young-female-doctor-looking-camera-office_1301-7807.jpg?semt=ais_hybrid&w=740&q=80',
+  'Dr. Arjun Reddy':   'https://www.shutterstock.com/image-photo/portrait-handsome-male-doctor-stethoscope-600nw-2480850611.jpg',
+  'Dr. Meera Nair':    'https://plus.unsplash.com/premium_photo-1664475450083-5c9eef17a191?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZmVtYWxlJTIwZG9jdG9yfGVufDB8fDB8fHww',
+  'Dr. Vikram Patel':  'https://t3.ftcdn.net/jpg/04/43/33/46/360_F_443334611_LWOYm4T463bkhZD8wTojJdeEzQ40DUWX.jpg',
+  'Dr. Ananya Iyer':   'https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500',
+  'Dr. Ravi Kumar':    'https://img.freepik.com/free-photo/smiling-asian-male-doctor-pointing-upwards_1262-18321.jpg',
+  'Dr. Sunita Rao':    'https://t3.ftcdn.net/jpg/15/75/74/62/360_F_1575746216_ZS5ovZG1rHulQUatTq0WVno9BGInMCwW.jpg',
+  'Dr. Karan Mehta':   'https://t4.ftcdn.net/jpg/03/10/37/43/360_F_310374365_fiIJLNqEeYVbXO0PpyUauQvZRreCMEdr.jpg',
+};
+
+const defaultRatings = {
+  'Dr. Priya Sharma':  { rating: 4.8, count: 124 },
+  'Dr. Arjun Reddy':   { rating: 4.9, count: 98  },
+  'Dr. Meera Nair':    { rating: 4.7, count: 87  },
+  'Dr. Vikram Patel':  { rating: 4.6, count: 73  },
+  'Dr. Ananya Iyer':   { rating: 4.7, count: 65  },
+  'Dr. Ravi Kumar':    { rating: 4.9, count: 210 },
+  'Dr. Sunita Rao':    { rating: 4.8, count: 112 },
+  'Dr. Karan Mehta':   { rating: 4.5, count: 56  },
+};
+
+function getDisplayRating(doc) {
+  if (doc.rating_count > 0) return { rating: doc.avg_rating, count: doc.rating_count };
+  return defaultRatings[doc.name] || { rating: 4.5, count: 42 };
+}
+
+function renderStars(rating) {
+  const full  = Math.floor(rating);
+  const hasHalf = (rating - full) >= 0.3;
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    if (i <= full)               html += '<span class="star filled">★</span>';
+    else if (i === full+1 && hasHalf) html += '<span class="star half">★</span>';
+    else                         html += '<span class="star empty">★</span>';
+  }
+  return html;
+}
+
+async function loadDoctors() {
+  try {
+    allDoctors = await apiFetch('/doctors/');
+    const specs = [...new Set(allDoctors.map(d => d.specialty))].sort();
+    const sel = document.getElementById('f-specialty');
+    sel.innerHTML = '<option value="">All specialties</option>' + specs.map(s=>`<option>${escHtml(s)}</option>`).join('');
+    renderDoctors(allDoctors);
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function renderDoctors(docs) {
+  document.getElementById('result-count').textContent = `Showing ${docs.length} doctor${docs.length!==1?'s':''}`;
+  if (!docs.length) {
+    document.getElementById('doctors-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔍</div><div class="empty-text">No doctors match your filters</div></div>`;
+    return;
+  }
+  document.getElementById('doctors-grid').innerHTML = docs.map(d => {
+    const { rating, count } = getDisplayRating(d);
+    const isTopRated = rating >= 4.7;
+    const photo = doctorPhotos[d.name];
+    const photoHtml = photo
+      ? `<img src="${photo}" alt="${escHtml(d.name)}" onerror="this.parentElement.innerHTML='<div class=\\'doc-photo-placeholder\\'>${(d.name||'D')[0]}</div>'">`
+      : `<div class="doc-photo-placeholder">${(d.name||'D')[0]}</div>`;
+    return `
+    <div class="doc-card">
+      <div class="doc-photo-wrap">${photoHtml}</div>
+      <div class="doc-name">${escHtml(d.name)}</div>
+      <div class="doc-exp-badge">${d.experience} yrs experience</div>
+      <div class="doc-specialty">${escHtml(d.specialty)}</div>
+      <div class="stars-row">
+        ${renderStars(rating)}
+        <span class="rating-num">${rating.toFixed(1)}</span>
+        <span class="rating-count">(${count})</span>
+        ${isTopRated ? '<span class="top-badge">⭐ Top</span>' : ''}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">₹${d.fees} / visit</div>
+      <div class="doc-bottom">
+        <button class="btn-book" style="flex:1" onclick="bookDoc(${d.id})">Book Now</button>
+        <button class="btn-rate" onclick="openReview(${d.id},'${escHtml(d.name)}')">⭐ Rate</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function applyFilters() {
+  const spec = document.getElementById('f-specialty').value;
+  const fees = +document.getElementById('f-fees').value || Infinity;
+  const exp  = +document.getElementById('f-exp').value  || 0;
+  renderDoctors(allDoctors.filter(d =>
+    (!spec || d.specialty === spec) && d.fees <= fees && d.experience >= exp
+  ));
+}
+function clearFilters() {
+  document.getElementById('f-specialty').value='';
+  document.getElementById('f-fees').value='';
+  document.getElementById('f-exp').value='';
+  renderDoctors(allDoctors);
+}
+
+function bookDoc(docId) { location.href='appointments.html'; }
+
+function openReview(id, name) {
+  document.getElementById('review-doctor-id-hidden') || (() => {
+    const inp = document.createElement('input');
+    inp.type='hidden'; inp.id='review-doctor-id-hidden';
+    document.body.appendChild(inp);
+  })();
+  document.getElementById('review-doctor-id-hidden').value = id;
+  document.getElementById('review-doctor-name').textContent = name;
+  selectedRating = 0;
+  renderStarPicker(0);
+  document.getElementById('review-comment').value = '';
+  openModal('review-modal');
+}
+function renderStarPicker(val) {
+  document.getElementById('star-picker').innerHTML = [1,2,3,4,5].map(i =>
+    `<span onclick="setRating(${i})" onmouseover="renderStarPicker(${i})" onmouseout="renderStarPicker(${selectedRating})"
+      style="cursor:pointer;color:${i<=val?'#F59E0B':'#E5E7EB'};transition:color .1s;user-select:none">★</span>`
+  ).join('');
+}
+function setRating(v) {
+  selectedRating = v;
+  renderStarPicker(v);
+}
+async function submitReview() {
+  if (!selectedRating) return showToast('Please select a rating','error');
+  const doctor_id = +document.getElementById('review-doctor-id-hidden').value;
+  const comment   = document.getElementById('review-comment').value;
+  try {
+    await apiFetch('/reviews/', {method:'POST', body:JSON.stringify({doctor_id, rating:selectedRating, comment})});
+    showToast('Review submitted! Thank you.','success');
+    closeModal('review-modal');
+    loadDoctors();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+loadDoctors();
+</script>
+</body>
+</html>

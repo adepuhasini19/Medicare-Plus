@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Symptom Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>Symptom Checker</h1>
+      <p>Select symptoms to get possible conditions and recommended specialists</p>
+    </div>
+    <div class="grid-2" style="gap:20px;align-items:start">
+      <div class="card">
+        <div class="section-title">Select your symptoms</div>
+        <div class="chips" id="symptom-chips"></div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn btn-primary btn-full" onclick="checkSymptoms()">Analyse symptoms</button>
+          <button class="btn btn-outline btn-sm" onclick="clearSymptoms()">Clear</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3)">⚠️ This is not a medical diagnosis. Always consult a qualified doctor.</div>
+      </div>
+      <div id="result-area" style="display:none">
+        <div class="card mb-16">
+          <div class="flex-between mb-12">
+            <div class="section-title" style="margin:0">Severity assessment</div>
+            <div id="severity-badge"></div>
+          </div>
+          <div style="font-size:13px;color:var(--text2)" id="severity-note"></div>
+        </div>
+        <div class="card mb-16">
+          <div class="section-title">Possible conditions</div>
+          <div id="diseases-list"></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Recommended specialists</div>
+          <div id="doctors-list"></div>
+          <button class="btn btn-soft btn-full mt-12" onclick="location.href='doctors.html'">Find a doctor →</button>
+        </div>
+      </div>
+      <div id="placeholder-area" class="card" style="text-align:center;padding:40px">
+        <div style="font-size:48px;margin-bottom:12px">🤖</div>
+        <div style="font-weight:600;color:var(--text2)">Select symptoms on the left</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px">Results will appear here</div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('symptoms');
+let selected = new Set();
+
+async function loadSymptoms() {
+  const list = await apiFetch('/symptoms/list');
+  document.getElementById('symptom-chips').innerHTML = list.map(s => `
+    <span class="chip" id="chip-${s.id}" onclick="toggleSymptom('${s.id}',this)">${s.label}</span>
+  `).join('');
+}
+
+function toggleSymptom(id, el) {
+  if (selected.has(id)) { selected.delete(id); el.classList.remove('selected'); }
+  else { selected.add(id); el.classList.add('selected'); }
+}
+function clearSymptoms() {
+  selected.clear();
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('placeholder-area').style.display = 'block';
+}
+
+async function checkSymptoms() {
+  if (!selected.size) return showToast('Please select at least one symptom','error');
+  try {
+    const res = await apiFetch('/symptoms/check', {method:'POST', body:JSON.stringify({symptoms:[...selected]})});
+    renderResults(res);
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function renderResults(res) {
+  document.getElementById('placeholder-area').style.display = 'none';
+  document.getElementById('result-area').style.display = 'block';
+
+  const sevMap = {
+    low: {cls:'badge-green', label:'Low severity', note:'Symptoms appear mild. Monitor and rest. Consult a doctor if symptoms persist.'},
+    medium: {cls:'badge-amber', label:'Moderate', note:'Multiple symptoms detected. Recommend scheduling a doctor visit soon.'},
+    high: {cls:'badge-red pulse', label:'⚠ High severity', note:'Symptoms may indicate a serious condition. Please seek medical attention immediately.'}
+  };
+  const sev = sevMap[res.severity] || sevMap.low;
+  document.getElementById('severity-badge').innerHTML = `<span class="badge ${sev.cls}">${sev.label}</span>`;
+  document.getElementById('severity-note').textContent = sev.note;
+
+  document.getElementById('diseases-list').innerHTML = res.possible_diseases.map(d => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2)">
+      <div style="font-weight:600;font-size:13.5px">${escHtml(d.name)}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:80px;height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+          <div style="width:${d.likelihood}%;height:100%;background:var(--green);border-radius:99px"></div>
+        </div>
+        <span style="font-size:12px;color:var(--text2);min-width:32px">${d.likelihood}%</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('doctors-list').innerHTML = res.suggested_doctors.map(s => `
+    <div class="flex gap-10" style="padding:8px 0;border-bottom:1px solid var(--border2)">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:12px">🏥</div>
+      <span style="font-size:13.5px;font-weight:600">${escHtml(s)}</span>
+    </div>`).join('');
+}
+
+loadSymptoms();
+</script>
+</body>
+</html>

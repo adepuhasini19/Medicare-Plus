@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>Medical Reports</h1>
+      <p>Upload and manage your health documents</p>
+      <div class="page-hero-actions">
+        <button class="btn btn-soft btn-sm" onclick="openModal('upload-modal')">+ Upload report</button>
+      </div>
+    </div>
+    <div id="reports-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
+  </main>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="upload-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Upload Report <button class="modal-close" onclick="closeModal('upload-modal')">×</button></div>
+    <div class="form-group">
+      <label class="form-label">Report Title</label>
+      <input class="form-input" id="r-title" placeholder="e.g. Blood Test Report"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Report Date</label>
+      <input class="form-input" type="date" id="r-date"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">File (PDF, JPG, PNG)</label>
+      <input class="form-input" type="file" id="r-file" accept=".pdf,.jpg,.jpeg,.png"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('upload-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadReport()">Upload</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('reports');
+
+async function loadReports() {
+  try {
+    const reports = await apiFetch('/reports/');
+    const grid = document.getElementById('reports-grid');
+    if (!reports.length) {
+      grid.innerHTML = '<div class="card" style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">📄</div><div class="empty-text">No reports uploaded yet</div><div class="empty-sub">Upload your first medical report above</div></div></div>';
+      return;
+    }
+    const iconMap = {pdf:'📑', jpg:'🖼', jpeg:'🖼', png:'🖼'};
+    grid.innerHTML = reports.map(r => `
+      <div class="card" style="display:flex;flex-direction:column;gap:12px">
+        <div class="flex gap-12">
+          <div style="width:42px;height:42px;background:var(--blue-l);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${iconMap[r.file_type]||'📄'}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(r.title)}</div>
+            <div style="font-size:12px;color:var(--text2)">${r.report_date||''} · Uploaded ${fmtDate(r.created_at)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="http://localhost:5000/api/reports/file/${r.filename}" target="_blank" class="btn btn-soft btn-sm" style="flex:1;text-align:center;text-decoration:none">View</a>
+          <button class="btn btn-sm" style="background:var(--red-l);color:var(--red)" onclick="deleteReport(${r.id})">Delete</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function uploadReport() {
+  const title = document.getElementById('r-title').value.trim();
+  const date  = document.getElementById('r-date').value;
+  const file  = document.getElementById('r-file').files[0];
+  if (!title) return showToast('Please enter a title','error');
+  if (!file)  return showToast('Please select a file','error');
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('title', title);
+  fd.append('report_date', date);
+  try {
+    await apiUpload('/reports/', fd);
+    showToast('Report uploaded!','success');
+    closeModal('upload-modal');
+    loadReports();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function deleteReport(id) {
+  if (!confirm('Delete this report?')) return;
+  try {
+    await apiFetch(`/reports/${id}`, {method:'DELETE'});
+    showToast('Report deleted','success');
+    loadReports();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+loadReports();
+</script>
+</body>
+</html>

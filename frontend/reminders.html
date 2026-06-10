@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medicare+ · Reminders</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main page-enter">
+    <div class="page-hero">
+      <h1>Medicine Reminders</h1>
+      <p>Never miss a dose again</p>
+      <div class="page-hero-actions">
+        <button class="btn btn-soft btn-sm" onclick="openModal('add-modal')">+ Add reminder</button>
+      </div>
+    </div>
+    <div id="reminders-container"></div>
+  </main>
+</div>
+
+<!-- Add Reminder Modal -->
+<div class="modal-overlay" id="add-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Add Reminder <button class="modal-close" onclick="closeModal('add-modal')">×</button></div>
+    <div class="form-group">
+      <label class="form-label">Medicine Name</label>
+      <input class="form-input" id="rm-name" placeholder="e.g. Metformin"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Dosage</label>
+        <input class="form-input" id="rm-dose" placeholder="e.g. 500mg"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reminder Time</label>
+        <input class="form-input" type="time" id="rm-time"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Frequency</label>
+      <select class="form-select" id="rm-freq">
+        <option value="daily">Daily</option>
+        <option value="twice_daily">Twice daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="as_needed">As needed</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('add-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addReminder()">Add reminder</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+requireAuth();
+buildSidebar('reminders');
+
+async function loadReminders() {
+  try {
+    const list = await apiFetch('/reminders/');
+    const container = document.getElementById('reminders-container');
+    if (!list.length) {
+      container.innerHTML = '<div class="card"><div class="empty-state"><div class="empty-icon">⏰</div><div class="empty-text">No reminders set</div><div class="empty-sub">Add your first medicine reminder above</div></div></div>';
+      return;
+    }
+    const active = list.filter(r => r.is_active);
+    const inactive = list.filter(r => !r.is_active);
+    container.innerHTML = `
+      ${active.length ? `<div class="section-title">Active (${active.length})</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:20px">
+        ${active.map(r => renderReminder(r)).join('')}
+      </div>` : ''}
+      ${inactive.length ? `<div class="section-title" style="color:var(--text3)">Inactive (${inactive.length})</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+        ${inactive.map(r => renderReminder(r)).join('')}
+      </div>` : ''}`;
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+function renderReminder(r) {
+  return `
+    <div class="card" style="opacity:${r.is_active?1:.55}">
+      <div class="flex-between mb-12">
+        <div class="flex gap-10">
+          <div style="width:36px;height:36px;background:${r.is_active?'var(--green-l)':'var(--bg2)'};border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px">💊</div>
+          <div>
+            <div style="font-weight:700;font-size:14px">${escHtml(r.medicine_name)}</div>
+            <div style="font-size:12px;color:var(--text2)">${escHtml(r.dosage||'')}</div>
+          </div>
+        </div>
+        <span class="badge ${r.is_active?'badge-green':'badge-gray'}">${r.is_active?'Active':'Off'}</span>
+      </div>
+      <div class="flex gap-10 mb-12">
+        <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:11px;color:var(--text3)">Time</div>
+          <div style="font-weight:700;font-size:13.5px">${fmtTime(r.reminder_time)}</div>
+        </div>
+        <div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center">
+          <div style="font-size:11px;color:var(--text3)">Frequency</div>
+          <div style="font-weight:600;font-size:13px">${r.frequency.replace('_',' ')}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="flex:1;background:${r.is_active?'var(--amber-l)':'var(--green-l)'};color:${r.is_active?'var(--amber)':'var(--green-d)'}" onclick="toggleReminder(${r.id})">${r.is_active?'Pause':'Resume'}</button>
+        <button class="btn btn-sm" style="background:var(--red-l);color:var(--red)" onclick="deleteReminder(${r.id})">Delete</button>
+      </div>
+    </div>`;
+}
+
+async function addReminder() {
+  const medicine_name = document.getElementById('rm-name').value.trim();
+  const dosage        = document.getElementById('rm-dose').value.trim();
+  const reminder_time = document.getElementById('rm-time').value;
+  const frequency     = document.getElementById('rm-freq').value;
+  if (!medicine_name || !reminder_time) return showToast('Medicine name and time are required','error');
+  try {
+    await apiFetch('/reminders/', {method:'POST', body:JSON.stringify({medicine_name,dosage,reminder_time,frequency})});
+    showToast('Reminder added!','success');
+    closeModal('add-modal');
+    loadReminders();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function toggleReminder(id) {
+  try {
+    await apiFetch(`/reminders/${id}/toggle`, {method:'PUT'});
+    loadReminders();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+async function deleteReminder(id) {
+  if (!confirm('Delete this reminder?')) return;
+  try {
+    await apiFetch(`/reminders/${id}`, {method:'DELETE'});
+    showToast('Reminder deleted','success');
+    loadReminders();
+  } catch(e) { showToast(e.message,'error'); }
+}
+
+loadReminders();
+</script>
+</body>
+</html>
